@@ -10,7 +10,7 @@
 |---|---|---|---|
 | M1 | Excel 파서 | `parser`, `파서`, `excel` | 5/5 Done |
 | M2 | `_설정` 시트 파싱 | `settings`, `설정` | 3/3 Done |
-| M3 | `GET /api/menu` | `api`, `api-menu` | 0/1 |
+| M3 | `GET /api/menu` | `api`, `api-menu` | 1/1 Done |
 | M4 | 파일 감시 + 디바운스 | `watcher`, `debounce`, `디바운스` | 0/1 |
 | M5 | SSE | `sse` | 0/1 |
 | M6 | 테마 분기 (하이브리드) | `theme`, `테마` | 0/2 |
@@ -39,7 +39,7 @@
 
 | 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
 |---|---|---|---|---|
-| ⬜ Todo | shouldReturnMenuJsonMatchingApiContract | 실제 xlsx 픽스처 → [TRD.md](docs/TRD.md) API 계약과 일치 검증 | `test/api-menu.test.mjs` | `server.mjs` |
+| ✅ Done | shouldReturnMenuJsonMatchingApiContract | 실제 xlsx 픽스처 → [TRD.md](docs/TRD.md) API 계약과 일치 검증 | `test/api-menu.test.mjs` | `server.mjs` (`createServer`, `loadMenuData`), `test/fixtures/menu.xlsx` |
 
 ## M4. 파일 감시 + 디바운스
 
