@@ -1,3 +1,10 @@
+# Dependencies
+node_modules/
+jspm_packages/
+.pnp/
+.pnp.js
+.pnp.cjs
+
 # Logs
 logs
 *.log
