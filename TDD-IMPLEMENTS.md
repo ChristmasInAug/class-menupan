@@ -8,7 +8,7 @@
 
 | 번호 | 이름 | 매치 키워드 | Task 진행 |
 |---|---|---|---|
-| M1 | Excel 파서 | `parser`, `파서`, `excel` | 1/5 Green |
+| M1 | Excel 파서 | `parser`, `파서`, `excel` | 5/5 Done |
 | M2 | `_설정` 시트 파싱 | `settings`, `설정` | 0/3 |
 | M3 | `GET /api/menu` | `api`, `api-menu` | 0/1 |
 | M4 | 파일 감시 + 디바운스 | `watcher`, `debounce`, `디바운스` | 0/1 |
@@ -21,11 +21,11 @@
 
 | 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
 |---|---|---|---|---|
-| 🟢 Green | shouldMarkItemSoldOutWhenFlagIsY | 품절 `Y`/빈칸 → `soldOut` boolean | `test/parser.test.mjs` | `lib/parser.mjs` |
-| ⬜ Todo | shouldParsePriceAsNumberOnly | 가격 숫자만 허용, 통화기호·콤마 섞인 값 처리 | `test/parser.test.mjs` | `lib/parser.mjs` |
-| ⬜ Todo | shouldExcludeSheetsStartingWithUnderscore | `_`로 시작하는 시트는 페이지 목록에서 제외 | `test/parser.test.mjs` | `lib/parser.mjs` |
-| ⬜ Todo | shouldReturnEmptyItemsForHeaderOnlySheet | 헤더만 있고 데이터 행 없는 시트 → 빈 배열 | `test/parser.test.mjs` | `lib/parser.mjs` |
-| ⬜ Todo | shouldPreserveCategoryColumn | 카테고리 값 그대로 전달 | `test/parser.test.mjs` | `lib/parser.mjs` |
+| ✅ Done | shouldMarkItemSoldOutWhenFlagIsY | 품절 `Y`/빈칸 → `soldOut` boolean | `test/parser.test.mjs` | `lib/parser.mjs` |
+| ✅ Done | shouldParsePriceAsNumberOnly | 가격 숫자만 허용, 통화기호·콤마 섞인 값 처리 | `test/parser.test.mjs` | `lib/parser.mjs` (`parsePrice`) |
+| ✅ Done | shouldExcludeSheetsStartingWithUnderscore | `_`로 시작하는 시트는 페이지 목록에서 제외 | `test/parser.test.mjs` | `lib/parser.mjs` (`parseWorkbook`) |
+| ✅ Done | shouldReturnEmptyItemsForHeaderOnlySheet | 헤더만 있고 데이터 행 없는 시트 → 빈 배열 | `test/parser.test.mjs` | `lib/parser.mjs` (`parseWorkbook`) |
+| ✅ Done | shouldPreserveCategoryColumn | 카테고리 값 그대로 전달 — 기존 `parseMenuSheet` 구현이 이미 만족(추가 코드 불필요) | `test/parser.test.mjs` | `lib/parser.mjs` |
 
 ## M2. `_설정` 시트 파싱
 
