@@ -1,0 +1,73 @@
+# TDD-IMPLEMENTS.md
+
+카페 메뉴판 TDD 실행 문서. **마일스톤 단위**로 `/tdd-red [마일스톤]` → `/tdd-green [마일스톤]` → `/tdd-refactor [마일스톤]`를 실행한다(켄트 벡 Red-Green-Refactor, [CLAUDE.md](CLAUDE.md) 참조). 각 마일스톤 안의 `should...` 항목은 하위 Task로 유지된다.
+
+**Task 상태 범례**: ⬜ Todo · 🔴 Red(실패 테스트 작성됨) · 🟢 Green(최소 구현, 테스트 통과) · ✅ Done(리팩터 완료)
+
+## 마일스톤 목록
+
+| 번호 | 이름 | 매치 키워드 | Task 진행 |
+|---|---|---|---|
+| M1 | Excel 파서 | `parser`, `파서`, `excel` | 1/5 Green |
+| M2 | `_설정` 시트 파싱 | `settings`, `설정` | 0/3 |
+| M3 | `GET /api/menu` | `api`, `api-menu` | 0/1 |
+| M4 | 파일 감시 + 디바운스 | `watcher`, `debounce`, `디바운스` | 0/1 |
+| M5 | SSE | `sse` | 0/1 |
+| M6 | 테마 분기 (하이브리드) | `theme`, `테마` | 0/2 |
+
+---
+
+## M1. Excel 파서 — `lib/parser.mjs`
+
+| 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
+|---|---|---|---|---|
+| 🟢 Green | shouldMarkItemSoldOutWhenFlagIsY | 품절 `Y`/빈칸 → `soldOut` boolean | `test/parser.test.mjs` | `lib/parser.mjs` |
+| ⬜ Todo | shouldParsePriceAsNumberOnly | 가격 숫자만 허용, 통화기호·콤마 섞인 값 처리 | `test/parser.test.mjs` | `lib/parser.mjs` |
+| ⬜ Todo | shouldExcludeSheetsStartingWithUnderscore | `_`로 시작하는 시트는 페이지 목록에서 제외 | `test/parser.test.mjs` | `lib/parser.mjs` |
+| ⬜ Todo | shouldReturnEmptyItemsForHeaderOnlySheet | 헤더만 있고 데이터 행 없는 시트 → 빈 배열 | `test/parser.test.mjs` | `lib/parser.mjs` |
+| ⬜ Todo | shouldPreserveCategoryColumn | 카테고리 값 그대로 전달 | `test/parser.test.mjs` | `lib/parser.mjs` |
+
+## M2. `_설정` 시트 파싱
+
+| 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
+|---|---|---|---|---|
+| ⬜ Todo | shouldParseStoreNameThemeAndAutoRotateSeconds | 매장명/테마/자동전환초 파싱 | `test/settings.test.mjs` | `lib/settings.mjs` |
+| ⬜ Todo | shouldApplyDefaultThemeWhenSettingMissing | 테마 값 누락 시 기본 테마 적용 | `test/settings.test.mjs` | `lib/settings.mjs` |
+| ⬜ Todo | shouldDefaultAutoRotateSecondsToZeroWhenMissing | 자동전환초 누락 시 0 기본값 | `test/settings.test.mjs` | `lib/settings.mjs` |
+
+## M3. `GET /api/menu`
+
+| 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
+|---|---|---|---|---|
+| ⬜ Todo | shouldReturnMenuJsonMatchingApiContract | 실제 xlsx 픽스처 → [TRD.md](docs/TRD.md) API 계약과 일치 검증 | `test/api-menu.test.mjs` | `server.mjs` |
+
+## M4. 파일 감시 + 디바운스
+
+| 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
+|---|---|---|---|---|
+| ⬜ Todo | shouldCoalesceRapidSaveEventsIntoSingleReload | 300ms 디바운스로 중복 저장 이벤트를 1회로 병합 | `test/watcher.test.mjs` | `lib/watcher.mjs` |
+
+## M5. SSE
+
+| 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
+|---|---|---|---|---|
+| ⬜ Todo | shouldBroadcastMenuUpdatedEventOnFileChange | 파일 변경 시 연결된 클라이언트에 `menu-updated` 이벤트 전달 | `test/sse.test.mjs` | `server.mjs` |
+
+## M6. 테마 분기 (하이브리드 — 방식 A 먼저, 방식 B는 이후)
+
+| 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
+|---|---|---|---|---|
+| ⬜ Todo | shouldSelectCssThemeWhenSettingMatchesCssThemeList | `_설정.테마`가 CSS 테마 목록과 일치하면 방식 A 선택 | `test/theme.test.mjs` | `lib/theme.mjs` |
+| ⬜ Todo | shouldSelectPngThemeWhenSettingMatchesPngThemeList | `_설정.테마`가 PNG 테마 목록과 일치하면 방식 B 선택 | `test/theme.test.mjs` | `lib/theme.mjs` |
+
+---
+
+## 진행 규칙 (마일스톤 단위)
+
+1. `/tdd-red [마일스톤 번호|이름]` — 인자 없으면 ⬜ Todo Task가 남아 있는 최상단 마일스톤. 해당 마일스톤의 ⬜ Todo Task **전부**에 대해 순서대로(한 번에 하나씩 작성 → `npm test`로 실패 확인 → 다음 Task) 실패 테스트를 작성, 각 Task 상태를 🔴로 갱신.
+2. `/tdd-green [마일스톤 번호|이름]` — 인자 없으면 🔴 Red Task가 있는 최상단 마일스톤. 해당 마일스톤의 🔴 Red Task **전부**를 순서대로 최소 구현으로 통과시키고, 매 Task 구현 후 `npm test` 전체 재확인, 상태를 🟢로 갱신.
+3. `/tdd-refactor [마일스톤 번호|이름]` — 인자 없으면 🟢 Green Task가 있는 최상단 마일스톤. 해당 마일스톤의 🟢 Green Task를 대상으로 하드코딩·중복·원칙 위반을 구조적 변경으로 정리, 매 변경 후 테스트 재실행, 상태를 ✅로 갱신.
+4. 마일스톤 안에서도 Task는 **한 번에 하나씩** 처리한다(동시에 여러 테스트를 미확인 상태로 몰아 쓰지 않는다) — 다만 그 마일스톤에 속한 모든 Task를 끝까지 순회하는 것이 목표다.
+5. 다른 마일스톤의 Task를 앞당겨 진행하지 않는다.
+6. 커밋은 각 명령이 초안 메시지만 제시하며, 실제 커밋은 사용자가 명시적으로 요청할 때만 수행한다.
+7. 마일스톤·Task 구성을 바꾸려면 이 파일을 먼저 수정한다(그 자체가 구조적 변경).

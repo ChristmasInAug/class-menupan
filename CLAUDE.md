@@ -5,7 +5,7 @@
 - 제품 요구사항(무엇을/왜): [docs/PRD.md](docs/PRD.md)
 - 기술 요구사항(어떻게): [docs/TRD.md](docs/TRD.md)
 - 원본 요구사항 원문: [docs/menu-project-requirement.md](docs/menu-project-requirement.md)
-- **TDD 체크리스트(실행용)**: [plan.md](plan.md) — "go" 지시 시 이 파일의 다음 미완료 항목 하나를 Red-Green-Refactor로 진행
+- **TDD 실행 문서**: [TDD-IMPLEMENTS.md](TDD-IMPLEMENTS.md) — 항목별 상태(⬜/🔴/🟢/✅) 추적. `/tdd-red` → `/tdd-green` → `/tdd-refactor` 슬래시 명령(`.claude/commands/`)으로 항목을 하나씩 진행
 
 이 저장소는 코드 없는 그린필드 상태다. 첫 구현부터 아래 TDD 프로세스를 따른다.
 
@@ -114,3 +114,20 @@ npm start
 
 `.claude/settings.local.json`에 **Stop 훅**이 걸려 있어, 세션 종료 시 `extract-my-prompts.sh`가 이 폴더의 Claude Code 세션에서 사용자가 입력한 프롬프트만 뽑아 [Prompt.md](Prompt.md)에 append한다. `settings.local.json`은 개인/머신 전용이라 `.gitignore` 처리돼 있다(커밋되지 않음).
 
+
+
+## TDD 필수 규칙
+
+### Red-Green-Refactor 사이클
+1. Red: 먼저 실패하는 테스트를 작성한다
+   - 테스트가 실제로 실패하는지 확인
+2. Green: 테스트를 통과시키는 최소한의 코드 작성
+   - 하드코딩도 허용 (다음 테스트가 일반화를 강제)
+3. Refactor: 테스트가 통과하는 상태에서 코드 개선
+   - 중복 제거, 명확한 이름 사용
+
+### 금지 사항
+- ❌ 테스트 없이 구현 코드 작성
+- ❌ 테스트와 구현을 동시에 작성
+- ❌ 테스트 skip 또는 주석 처리
+- ❌ 실패 원인 분석 없이 테스트 수정
