@@ -13,7 +13,7 @@
 | M3 | `GET /api/menu` | `api`, `api-menu` | 1/1 Done |
 | M4 | 파일 감시 + 디바운스 | `watcher`, `debounce`, `디바운스` | 1/1 Done |
 | M5 | SSE | `sse` | 1/1 Done |
-| M6 | 테마 분기 (하이브리드) | `theme`, `테마` | 0/2 |
+| M6 | 테마 분기 (하이브리드) | `theme`, `테마` | 2/2 Done |
 
 ---
 
@@ -57,8 +57,8 @@
 
 | 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
 |---|---|---|---|---|
-| ⬜ Todo | shouldSelectCssThemeWhenSettingMatchesCssThemeList | `_설정.테마`가 CSS 테마 목록과 일치하면 방식 A 선택 | `test/theme.test.mjs` | `lib/theme.mjs` |
-| ⬜ Todo | shouldSelectPngThemeWhenSettingMatchesPngThemeList | `_설정.테마`가 PNG 테마 목록과 일치하면 방식 B 선택 | `test/theme.test.mjs` | `lib/theme.mjs` |
+| ✅ Done | shouldSelectCssThemeWhenSettingMatchesCssThemeList | `_설정.테마`가 CSS 테마 목록과 일치하면 방식 A 선택 | `test/theme.test.mjs` | `lib/theme.mjs` (`selectThemeMode`) |
+| ✅ Done | shouldSelectPngThemeWhenSettingMatchesPngThemeList | `_설정.테마`가 PNG 테마 목록과 일치하면 방식 B 선택 — `cafe-dark`/`bistro-light`는 CSS 목록 우선 체크로 항상 방식 A | `test/theme.test.mjs` | `lib/theme.mjs` (`selectThemeMode`) |
 
 ---
 
