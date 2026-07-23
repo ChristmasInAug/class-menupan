@@ -7,6 +7,8 @@ import { parseSettings } from './lib/settings.mjs';
 
 XLSX.set_fs(fs);
 
+const MENU_UPDATED_EVENT = 'menu-updated';
+
 function loadMenuData(dataFile) {
   const workbook = XLSX.readFile(dataFile);
   const sheets = Object.fromEntries(
@@ -24,10 +26,32 @@ function loadMenuData(dataFile) {
 
 export function createServer({ dataFile }) {
   const app = express();
+  const sseClients = [];
 
   app.get('/api/menu', (_req, res) => {
     res.json(loadMenuData(dataFile));
   });
 
-  return http.createServer(app);
+  app.get('/events', (req, res) => {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    });
+    res.flushHeaders();
+    sseClients.push(res);
+    req.on('close', () => {
+      sseClients.splice(sseClients.indexOf(res), 1);
+    });
+  });
+
+  const server = http.createServer(app);
+
+  server.on(MENU_UPDATED_EVENT, () => {
+    for (const client of sseClients) {
+      client.write(`event: ${MENU_UPDATED_EVENT}\ndata: {}\n\n`);
+    }
+  });
+
+  return server;
 }

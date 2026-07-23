@@ -12,7 +12,7 @@
 | M2 | `_설정` 시트 파싱 | `settings`, `설정` | 3/3 Done |
 | M3 | `GET /api/menu` | `api`, `api-menu` | 1/1 Done |
 | M4 | 파일 감시 + 디바운스 | `watcher`, `debounce`, `디바운스` | 1/1 Done |
-| M5 | SSE | `sse` | 0/1 |
+| M5 | SSE | `sse` | 1/1 Done |
 | M6 | 테마 분기 (하이브리드) | `theme`, `테마` | 0/2 |
 
 ---
@@ -51,7 +51,7 @@
 
 | 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
 |---|---|---|---|---|
-| ⬜ Todo | shouldBroadcastMenuUpdatedEventOnFileChange | 파일 변경 시 연결된 클라이언트에 `menu-updated` 이벤트 전달 | `test/sse.test.mjs` | `server.mjs` |
+| ✅ Done | shouldBroadcastMenuUpdatedEventOnFileChange | 파일 변경 시 연결된 클라이언트에 `menu-updated` 이벤트 전달 — `server`(http.Server)에 `'menu-updated'` emit 시 등록된 SSE 클라이언트에 브로드캐스트. `res.flushHeaders()` 누락 버그 발견·수정(Node는 첫 body write 전까지 writeHead를 소켓에 flush 안 함) | `test/sse.test.mjs` | `server.mjs` (`/events` route, `MENU_UPDATED_EVENT` 상수) |
 
 ## M6. 테마 분기 (하이브리드 — 방식 A 먼저, 방식 B는 이후)
 
