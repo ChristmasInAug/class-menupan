@@ -9,7 +9,7 @@
 | 번호 | 이름 | 매치 키워드 | Task 진행 |
 |---|---|---|---|
 | M1 | Excel 파서 | `parser`, `파서`, `excel` | 5/5 Done |
-| M2 | `_설정` 시트 파싱 | `settings`, `설정` | 0/3 |
+| M2 | `_설정` 시트 파싱 | `settings`, `설정` | 3/3 Done |
 | M3 | `GET /api/menu` | `api`, `api-menu` | 0/1 |
 | M4 | 파일 감시 + 디바운스 | `watcher`, `debounce`, `디바운스` | 0/1 |
 | M5 | SSE | `sse` | 0/1 |
@@ -31,9 +31,9 @@
 
 | 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
 |---|---|---|---|---|
-| ⬜ Todo | shouldParseStoreNameThemeAndAutoRotateSeconds | 매장명/테마/자동전환초 파싱 | `test/settings.test.mjs` | `lib/settings.mjs` |
-| ⬜ Todo | shouldApplyDefaultThemeWhenSettingMissing | 테마 값 누락 시 기본 테마 적용 | `test/settings.test.mjs` | `lib/settings.mjs` |
-| ⬜ Todo | shouldDefaultAutoRotateSecondsToZeroWhenMissing | 자동전환초 누락 시 0 기본값 | `test/settings.test.mjs` | `lib/settings.mjs` |
+| ✅ Done | shouldParseStoreNameThemeAndAutoRotateSeconds | 매장명/테마/자동전환초 파싱 | `test/settings.test.mjs` | `lib/settings.mjs` (`parseSettings`) |
+| ✅ Done | shouldApplyDefaultThemeWhenSettingMissing | 테마 값 누락 시 기본 테마(`cafe-dark`) 적용 | `test/settings.test.mjs` | `lib/settings.mjs` (`parseSettings`) |
+| ✅ Done | shouldDefaultAutoRotateSecondsToZeroWhenMissing | 자동전환초 누락 시 0 기본값 | `test/settings.test.mjs` | `lib/settings.mjs` (`parseSettings`) |
 
 ## M3. `GET /api/menu`
 
