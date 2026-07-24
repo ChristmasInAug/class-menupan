@@ -31,3 +31,19 @@ test('shouldDefaultAutoRotateSecondsToZeroWhenMissing', () => {
 
   assert.equal(settings.autoRotateSeconds, 0);
 });
+
+test('shouldParseDeviceSetting', () => {
+  const rows = [{ 항목: '디바이스', 값: 'tablet-port' }];
+
+  const settings = parseSettings(rows);
+
+  assert.equal(settings.device, 'tablet-port');
+});
+
+test('shouldParseEnglishTagSetting', () => {
+  const rows = [{ 항목: '영문태그', 값: 'SPECIALTY COFFEE' }];
+
+  const settings = parseSettings(rows);
+
+  assert.equal(settings.englishTag, 'SPECIALTY COFFEE');
+});
