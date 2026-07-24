@@ -1,0 +1,19 @@
+{
+  "name": "menupan",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Excel 연동 및 SSE 기반 카페 메뉴판",
+  "engines": {
+    "node": ">=18.13.0"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "express": "^4.19.2",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  }
+}
