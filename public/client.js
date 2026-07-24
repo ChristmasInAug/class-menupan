@@ -1,6 +1,7 @@
-import { selectPage, buildBoardViewModel, getPageIndicators, selectDeviceProfile } from '/lib/board.mjs';
+import { selectPage, buildBoardViewModel, getPageIndicators, computeFitScale, DEVICE_DIMENSIONS } from '/lib/board.mjs';
 
 const RESIZE_DEBOUNCE_MS = 150;
+const DEFAULT_DEVICE = 'signage';
 
 let menuData = null;
 let pageIndex = 0;
@@ -21,13 +22,16 @@ function goToPage(index) {
 }
 
 function render() {
-  const deviceProfile = selectDeviceProfile(window.innerWidth, window.innerHeight);
-  const viewModel = buildBoardViewModel({ theme: menuData.theme, device: deviceProfile });
-  const u = Math.min(window.innerWidth, window.innerHeight);
+  const viewModel = buildBoardViewModel({ theme: menuData.theme, device: menuData.device });
+  const dimensions = DEVICE_DIMENSIONS[menuData.device] ?? DEVICE_DIMENSIONS[DEFAULT_DEVICE];
+  const u = Math.min(dimensions.width, dimensions.height);
   const page = selectPage(menuData.pages, pageIndex);
   const indicators = getPageIndicators(menuData.pages, pageIndex);
 
-  document.getElementById('board').innerHTML = renderBoard({
+  const board = document.getElementById('board');
+  board.style.width = `${dimensions.width}px`;
+  board.style.height = `${dimensions.height}px`;
+  board.innerHTML = renderBoard({
     viewModel,
     u,
     page,
@@ -39,16 +43,30 @@ function render() {
   document.querySelectorAll('[data-page-index]').forEach((el) => {
     el.addEventListener('click', () => goToPage(Number(el.dataset.pageIndex)));
   });
+
+  applyFitScale(dimensions);
+}
+
+function applyFitScale(dimensions) {
+  const board = document.getElementById('board');
+  const scale = computeFitScale(window.innerWidth, window.innerHeight, dimensions.width, dimensions.height);
+  board.style.transform = `scale(${scale})`;
 }
 
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    if (menuData) render();
+    if (menuData) {
+      const dimensions = DEVICE_DIMENSIONS[menuData.device] ?? DEVICE_DIMENSIONS[DEFAULT_DEVICE];
+      applyFitScale(dimensions);
+    }
   }, RESIZE_DEBOUNCE_MS);
 });
 window.addEventListener('orientationchange', () => {
-  if (menuData) render();
+  if (menuData) {
+    const dimensions = DEVICE_DIMENSIONS[menuData.device] ?? DEVICE_DIMENSIONS[DEFAULT_DEVICE];
+    applyFitScale(dimensions);
+  }
 });
 
 function renderBoard({ viewModel, u, page, indicators, storeName, englishTag }) {
@@ -61,9 +79,8 @@ function renderBoard({ viewModel, u, page, indicators, storeName, englishTag }) 
     : '';
 
   return `
-    <div style="position:relative;width:100vw;height:100vh;overflow:hidden;">
-      ${backgroundLayer}
-      <div style="position:relative;padding:${px(0.085)};display:flex;flex-direction:column;height:100%;box-sizing:border-box;font-family:'Pretendard',sans-serif;">
+    ${backgroundLayer}
+    <div style="position:relative;padding:${px(0.085)};display:flex;flex-direction:column;height:100%;box-sizing:border-box;font-family:'Pretendard',sans-serif;">
         <div style="font-size:${px(0.0175)};letter-spacing:${px(0.0175 * 0.42)};color:${colors.accent};font-weight:700;">${englishTag ?? ''}</div>
         <div style="font-family:'Nanum Myeongjo',serif;font-size:${px(0.058)};color:${colors.text};font-weight:800;margin-top:${px(0.014)};">${storeName ?? ''}</div>
         <div style="height:2px;width:${px(0.11)};background:${colors.accent};opacity:.85;margin:${px(0.03)} 0 ${px(0.022)};"></div>
@@ -75,7 +92,6 @@ function renderBoard({ viewModel, u, page, indicators, storeName, englishTag }) 
           ${page.items.map((item) => renderItem(item, u, colors)).join('')}
         </div>
       </div>
-    </div>
   `;
 }
 

@@ -18,7 +18,9 @@
 | M8 | 클라이언트 페이지 분리 렌더링 | `page`, `board`, `페이지` | 1/1 Done |
 | M9 | 테마 렌더링 적용 (방식 B: PNG 배경+테두리) | `render`, `png`, `렌더링` | 2/2 Done |
 | M10 | 페이지 네비게이션 (수동 전환) | `nav`, `indicator`, `네비게이션` | 1/1 Done |
-| M11 | 뷰포트 기반 디바이스 프로파일 자동 감지 | `viewport`, `responsive`, `반응형` | 2/2 Done |
+| M11 | ~~뷰포트 기반 디바이스 프로파일 자동 감지~~ (제거됨) | `viewport`, `responsive`, `반응형` | 요구사항 변경으로 롤백 |
+| M12 | 관리자 인증 + 설정 조회/저장 (Excel 쓰기 + SSE 반영) | `admin`, `어드민`, `login` | 7/7 Done |
+| M13 | 디바이스 정확한 해상도 반영 (고정 캔버스 + contain 스케일) | `resolution`, `fit-scale`, `해상도` | 1/1 Done |
 
 ---
 
@@ -110,12 +112,12 @@
 
 **글루 코드(should-테스트 대상 아님)**: `public/client.js`가 `getPageIndicators`의 `{label, active}`를 시트명 텍스트 버튼(`renderNavButton`, 사용자 요청으로 점 표시 대신 버튼으로 변경, 시트명 줄 위에 배치)으로 렌더하고 클릭 시 `goToPage(i)` 호출(DOM 이벤트 의존이라 단위 테스트 제외). 디자인 레이아웃(고정 디바이스 비율 박스, eyebrow/세리프 매장명/rule 라인/점선 리더/품절 배지)은 `public/index.html`+`public/client.js`에 CSS로 재구현 — 순수 로직이 아니라 시각적 스타일이라 별도 should-테스트 대상 아님, 매뉴얼 스모크 테스트로 검증.
 
-## M11. 뷰포트 기반 디바이스 프로파일 자동 감지
+## M11. ~~뷰포트 기반 디바이스 프로파일 자동 감지~~ (제거됨, 2026-07-24)
 
-| 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
-|---|---|---|---|---|
-| ✅ Done | shouldSelectDeviceProfileFromViewportDimensions | 실시간 `window.innerWidth/innerHeight`로 4개 프로파일(mobile/tablet-port/tablet-land/signage) 중 하나 선택 — `_설정.디바이스`는 더 이상 렌더링 크기 결정에 안 쓰고 자산 선택 폴백으로만 유지 | `test/board.test.mjs` | `lib/board.mjs` (`selectDeviceProfile`) |
-| ✅ Done | shouldMatchDeviceProfileToExactSpecResolutions | CLAUDE.md `## 해상도`에 명시된 정확한 4개 해상도가 각각 자기 프로파일로 매칭 — 폭 기준 임의 브레이크포인트를 버리고 `DEVICE_DIMENSIONS`(export, 스펙 단일 소스) 기준 **가장 가까운 종횡비** 매칭으로 교체해 버그 수정 | `test/board.test.mjs` | `lib/board.mjs` (`DEVICE_DIMENSIONS`, `selectDeviceProfile`) |
+**롤백 사유**: 관리자 페이지 도입 결정 시 사용자가 명시적으로 "자동감지 제거, 어드민 디바이스 설정값으로 고정"을 선택 — `localhost:3000`은 이제 `_설정.디바이스`(어드민이 저장한 값)로만 배경/프레임을 고르고, 실제 화면 채움(100vw×100vh, 레터박스 없음)은 유지한다. `selectDeviceProfile`과 관련 테스트 2개를 `lib/board.mjs`/`test/board.test.mjs`에서 삭제(미사용 코드 방치 금지 원칙). `DEVICE_DIMENSIONS`는 M12 어드민 화면의 디바이스 선택 UI에서 재사용하므로 유지.
+
+~~| ✅ Done | shouldSelectDeviceProfileFromViewportDimensions | ... |~~
+~~| ✅ Done | shouldMatchDeviceProfileToExactSpecResolutions | ... |~~
 
 **근본 원인**: `client.js`가 `_설정.디바이스`(Excel 고정값)로 픽셀 캔버스를 고정하고 `transform:scale()`로 화면에 맞춰 축소 — 실제 보는 기기의 뷰포트 비율과 안 맞으면 레터박스/여백 발생, 사용자에겐 "잘림"으로 인지됨. 뷰포트 실시간 감지 자체가 없었음.
 
@@ -124,6 +126,38 @@
 **매뉴얼 스모크 테스트 완료** (2026-07-24): `node --check public/client.js`, `node --check lib/board.mjs` 통과(IDE가 stale TS 진단 오탐 냈으나 실제 파싱은 정상). `PORT=4240 npm start` → `curl /`(200), `client.js`에 `selectDeviceProfile`/`innerWidth`/`100vw` 포함 확인. **실제 기기별(모바일/태블릿/가로세로) 시각 확인은 여전히 못함** — Chrome 확장 미설치. 브라우저 개발자도구로 기기 시뮬레이션 켜고 `npm start` 후 확인 부탁.
 
 **스펙 해상도 버그 수정 후 재검증** (2026-07-24, CLAUDE.md `## 해상도` 추가 반영): `node -e`로 4개 정확한 스펙 해상도(1080×1920/1920×1440/1440×1920/1080×2160) 직접 대입 → 전부 자기 프로파일로 정확히 매칭 확인. `PORT=4250 npm start` → `curl /`, `/client.js` 200 확인.
+
+## M12. 관리자 인증 + 설정 조회/저장 (Excel 쓰기 + SSE 반영)
+
+**요구사항**: `/admin`에서 `admin`/`1234` 로그인 후 `design/project/메뉴판템플릿시스템.dc.html`처럼 테마·디바이스를 버튼으로 고르고 매장명/영문태그/자동전환초를 편집, 저장하면 실제 `data/menu.xlsx`의 `_설정` 시트에 반영되고 뷰어(`localhost:3000`)가 SSE로 즉시 갱신된다.
+
+| 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
+|---|---|---|---|---|
+| ✅ Done | shouldConvertSettingsToSheetRows | 설정 객체 → `_설정` 시트 행 배열(`{항목,값}`), `parseSettings`의 역변환 | `test/settings.test.mjs` | `lib/settings.mjs` (`settingsToRows`) |
+| ✅ Done | shouldExposeAvailableThemeLists | `lib/theme.mjs`가 CSS·PNG 테마 목록을 export(어드민 테마 선택 UI가 그대로 사용) | `test/theme.test.mjs` | `lib/theme.mjs` (`CSS_THEMES`, `PNG_THEMES`) |
+| ✅ Done | shouldVerifyAdminCredentials | `admin`/`1234`만 인증 통과, 그 외 거부 | `test/admin-auth.test.mjs` | `lib/adminAuth.mjs` (`verifyAdminCredentials`) |
+| ✅ Done | shouldRejectAdminSettingsRequestsWithoutValidSession | 세션 쿠키 없이 `GET`/`POST /api/admin/settings` 호출 시 401 | `test/admin.test.mjs` | `server.mjs` (`requireAdminSession`) |
+| ✅ Done | shouldLoginWithValidCredentialsAndSetSessionCookie | `POST /api/admin/login` 올바른 자격증명 → 200 + `Set-Cookie`, 틀리면 401 | `test/admin.test.mjs` | `server.mjs` (`/api/admin/login`) |
+| ✅ Done | shouldPersistSettingsToExcelAndBroadcastMenuUpdated | 로그인 후 `POST /api/admin/settings` → 실제 xlsx 파일의 `_설정` 시트가 갱신되고(재조회로 확인) `menu-updated` SSE 이벤트도 즉시 발생 | `test/admin.test.mjs` | `server.mjs` (`saveSettings`, `/api/admin/settings`) |
+| ✅ Done | shouldServeAdminPageAtAdminRoute | `GET /admin`(확장자 없음)이 `public/admin.html`을 반환 — curl 스모크 테스트로 발견된 버그(`express.static`는 확장자 없는 경로 자동 매칭 안 함, 404였음) `res.sendFile`로 명시 라우트 추가해 수정 | `test/admin.test.mjs` | `server.mjs` (`GET /admin`) |
+
+**글루 코드(should-테스트 대상 아님)**: `/admin` HTML+JS(`public/admin.html`, `public/admin.js`) — 로그인 폼, 디자인 번들과 동일한 스타일의 테마/디바이스 버튼 그리드(`DEVICE_DIMENSIONS`·`CSS_THEMES`/`PNG_THEMES` 재사용), 매장명/영문태그/자동전환초 입력, 저장 버튼. DOM 의존이라 단위 테스트 제외, curl 스크립트(로그인→저장→재조회)로 매뉴얼 검증.
+
+**매뉴얼 스모크 테스트 완료** (2026-07-24): 실 `data/menu.xlsx`를 임시 백업 후 `PORT=4270 npm start` → `curl /admin`(200) → 로그인(`curl -c cookie.txt`) → `curl -b cookie.txt -X POST /api/admin/settings`(매장명/테마/디바이스/영문태그/자동전환초 변경) → `curl /api/menu`로 뷰어 API에 즉시 반영 확인(`최종스모크`/`beige`/`signage`) → 테스트 후 원본 파일로 복원, `git status`로 오염 없음 확인.
+
+## M13. 디바이스 정확한 해상도 반영 (고정 캔버스 + contain 스케일)
+
+**근본 원인**(사용자 리포트): `public/client.js`가 보드를 `100vw × 100vh`로 그려 실제 브라우저 창 크기를 그대로 씀 — 어드민이 고른 `_설정.디바이스`의 정확한 픽셀 치수(`DEVICE_DIMENSIONS`)를 렌더링 크기에 전혀 반영 안 함. 배경 PNG 파일명 선택에만 `device`를 쓰고, 컨테이너 실제 크기·종횡비는 무시됐음.
+
+| 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
+|---|---|---|---|---|
+| ✅ Done | shouldComputeFitScalePreservingAspectRatio | 뷰포트 크기 대비 디바이스 정확 해상도를 찌그러뜨리지 않고 담는(contain) 배율 계산 — `Math.min(뷰포트W/디바이스W, 뷰포트H/디바이스H)` | `test/board.test.mjs` | `lib/board.mjs` (`computeFitScale`) |
+
+**글루 코드(should-테스트 대상 아님)**: `public/client.js`가 보드를 `DEVICE_DIMENSIONS[device]`의 정확한 px 크기로 고정 렌더링하고 `computeFitScale`로 계산한 배율을 `transform: scale()`로 적용, `resize`/`orientationchange`에 재계산. 실제 화면이 선택한 디바이스와 같은 비율이면 여백 없이 꽉 차고, 다르면 비율 유지한 채 중앙 배치(레터박스) — 찌그러뜨리거나 잘라내지 않음. `public/index.html`은 `body`를 flex 중앙 정렬로 되돌리고 `#board`에 `position:relative;overflow:hidden;transform-origin:center center` 부여.
+
+**추가로 발견한 사실(코드 버그 아님)**: 사용자가 "엑셀 반영 안 됨"으로 신고한 증상은 실제로는 `lsof -i :3000` 확인 결과 15:30:49부터 떠 있던 오래된 `node server.mjs` 프로세스(PID 7877)가 어드민 라우트 추가 이후 코드를 전혀 반영 못 한 채 계속 서빙 중이었기 때문 — Node는 파일 변경을 자동 반영 안 함. 사용자에게 `npm start` 재시작 안내함.
+
+**매뉴얼 스모크 테스트 완료** (2026-07-24): 실 `data/menu.xlsx` 백업 후 `PORT=4280 npm start` → `curl /`(200), `client.js`에 `DEVICE_DIMENSIONS`/`computeFitScale`/`applyFitScale` 포함 확인 → 테스트 후 원본 파일 복원.
 
 ---
 

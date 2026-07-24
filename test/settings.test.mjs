@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseSettings } from '../lib/settings.mjs';
+import { parseSettings, settingsToRows } from '../lib/settings.mjs';
 
 test('shouldParseStoreNameThemeAndAutoRotateSeconds', () => {
   const rows = [
@@ -46,4 +46,18 @@ test('shouldParseEnglishTagSetting', () => {
   const settings = parseSettings(rows);
 
   assert.equal(settings.englishTag, 'SPECIALTY COFFEE');
+});
+
+test('shouldConvertSettingsToSheetRows', () => {
+  const settings = {
+    storeName: '빌런 커피',
+    theme: 'deep-green',
+    device: 'tablet-port',
+    englishTag: 'SPECIALTY COFFEE',
+    autoRotateSeconds: 10,
+  };
+
+  const rows = settingsToRows(settings);
+
+  assert.deepEqual(parseSettings(rows), settings);
 });
