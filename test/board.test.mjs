@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { selectPage, buildBoardViewModel, getPageIndicators } from '../lib/board.mjs';
+import { selectPage, buildBoardViewModel, getPageIndicators, selectDeviceProfile } from '../lib/board.mjs';
 
 test('shouldSelectSinglePageByIndexWithWraparound', () => {
   const pages = [{ sheetName: '커피' }, { sheetName: '디저트' }, { sheetName: '음료' }];
@@ -36,4 +36,18 @@ test('shouldBuildPageIndicatorsWithActiveFlag', () => {
     { label: '디저트', active: true },
     { label: '음료', active: false },
   ]);
+});
+
+test('shouldSelectDeviceProfileFromViewportDimensions', () => {
+  assert.equal(selectDeviceProfile(390, 844), 'mobile');
+  assert.equal(selectDeviceProfile(820, 1180), 'tablet-port');
+  assert.equal(selectDeviceProfile(1920, 1080), 'tablet-land');
+  assert.equal(selectDeviceProfile(1920, 3413), 'signage');
+});
+
+test('shouldMatchDeviceProfileToExactSpecResolutions', () => {
+  assert.equal(selectDeviceProfile(1080, 1920), 'signage');
+  assert.equal(selectDeviceProfile(1920, 1440), 'tablet-land');
+  assert.equal(selectDeviceProfile(1440, 1920), 'tablet-port');
+  assert.equal(selectDeviceProfile(1080, 2160), 'mobile');
 });

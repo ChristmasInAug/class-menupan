@@ -1,16 +1,11 @@
-import { selectPage, buildBoardViewModel, getPageIndicators } from '/lib/board.mjs';
+import { selectPage, buildBoardViewModel, getPageIndicators, selectDeviceProfile } from '/lib/board.mjs';
 
-const DEVICE_DIMENSIONS = {
-  signage: { width: 1080, height: 1920 },
-  'tablet-land': { width: 1920, height: 1440 },
-  'tablet-port': { width: 1440, height: 1920 },
-  mobile: { width: 1080, height: 2160 },
-};
-const DEFAULT_DEVICE = 'signage';
+const RESIZE_DEBOUNCE_MS = 150;
 
 let menuData = null;
 let pageIndex = 0;
 let rotateTimer = null;
+let resizeTimer = null;
 
 async function loadMenu() {
   const res = await fetch('/api/menu');
@@ -26,16 +21,14 @@ function goToPage(index) {
 }
 
 function render() {
-  const viewModel = buildBoardViewModel({ theme: menuData.theme, device: menuData.device });
-  const dimensions = DEVICE_DIMENSIONS[menuData.device] ?? DEVICE_DIMENSIONS[DEFAULT_DEVICE];
-  const u = Math.min(dimensions.width, dimensions.height);
+  const deviceProfile = selectDeviceProfile(window.innerWidth, window.innerHeight);
+  const viewModel = buildBoardViewModel({ theme: menuData.theme, device: deviceProfile });
+  const u = Math.min(window.innerWidth, window.innerHeight);
   const page = selectPage(menuData.pages, pageIndex);
   const indicators = getPageIndicators(menuData.pages, pageIndex);
 
-  const board = document.getElementById('board');
-  board.innerHTML = renderBoard({
+  document.getElementById('board').innerHTML = renderBoard({
     viewModel,
-    dimensions,
     u,
     page,
     indicators,
@@ -46,24 +39,19 @@ function render() {
   document.querySelectorAll('[data-page-index]').forEach((el) => {
     el.addEventListener('click', () => goToPage(Number(el.dataset.pageIndex)));
   });
-
-  applyScale(dimensions);
-}
-
-function applyScale(dimensions) {
-  const board = document.getElementById('board');
-  const scale = Math.min(window.innerWidth / dimensions.width, window.innerHeight / dimensions.height);
-  board.style.transform = `scale(${scale})`;
 }
 
 window.addEventListener('resize', () => {
-  if (menuData) {
-    const dimensions = DEVICE_DIMENSIONS[menuData.device] ?? DEVICE_DIMENSIONS[DEFAULT_DEVICE];
-    applyScale(dimensions);
-  }
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (menuData) render();
+  }, RESIZE_DEBOUNCE_MS);
+});
+window.addEventListener('orientationchange', () => {
+  if (menuData) render();
 });
 
-function renderBoard({ viewModel, dimensions, u, page, indicators, storeName, englishTag }) {
+function renderBoard({ viewModel, u, page, indicators, storeName, englishTag }) {
   const { colors } = viewModel;
   const px = (ratio) => `${Math.round(u * ratio)}px`;
 
@@ -73,17 +61,17 @@ function renderBoard({ viewModel, dimensions, u, page, indicators, storeName, en
     : '';
 
   return `
-    <div style="position:relative;width:${dimensions.width}px;height:${dimensions.height}px;overflow:hidden;">
+    <div style="position:relative;width:100vw;height:100vh;overflow:hidden;">
       ${backgroundLayer}
       <div style="position:relative;padding:${px(0.085)};display:flex;flex-direction:column;height:100%;box-sizing:border-box;font-family:'Pretendard',sans-serif;">
         <div style="font-size:${px(0.0175)};letter-spacing:${px(0.0175 * 0.42)};color:${colors.accent};font-weight:700;">${englishTag ?? ''}</div>
         <div style="font-family:'Nanum Myeongjo',serif;font-size:${px(0.058)};color:${colors.text};font-weight:800;margin-top:${px(0.014)};">${storeName ?? ''}</div>
         <div style="height:2px;width:${px(0.11)};background:${colors.accent};opacity:.85;margin:${px(0.03)} 0 ${px(0.022)};"></div>
-        <div style="display:flex;gap:${px(0.02)};">
+        <div style="display:flex;gap:${px(0.02)};flex-wrap:wrap;">
           ${indicators.map((indicator, index) => renderNavButton(indicator, index, colors, u)).join('')}
         </div>
         <div style="font-family:'Nanum Myeongjo',serif;font-size:${px(0.03)};color:${colors.text};font-weight:700;margin-top:${px(0.022)};">${page.sheetName}</div>
-        <div style="margin-top:${px(0.04)};display:flex;flex-direction:column;gap:${px(0.032)};">
+        <div style="margin-top:${px(0.04)};display:flex;flex-direction:column;gap:${px(0.032)};overflow-y:auto;">
           ${page.items.map((item) => renderItem(item, u, colors)).join('')}
         </div>
       </div>

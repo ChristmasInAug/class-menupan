@@ -18,6 +18,7 @@
 | M8 | 클라이언트 페이지 분리 렌더링 | `page`, `board`, `페이지` | 1/1 Done |
 | M9 | 테마 렌더링 적용 (방식 B: PNG 배경+테두리) | `render`, `png`, `렌더링` | 2/2 Done |
 | M10 | 페이지 네비게이션 (수동 전환) | `nav`, `indicator`, `네비게이션` | 1/1 Done |
+| M11 | 뷰포트 기반 디바이스 프로파일 자동 감지 | `viewport`, `responsive`, `반응형` | 2/2 Done |
 
 ---
 
@@ -108,6 +109,21 @@
 | ✅ Done | shouldBuildPageIndicatorsWithActiveFlag | 페이지 배열 + 현재 인덱스 → `[{label, active}]` 점(dot) 네비게이션 데이터 — `자동전환초=0`이어도 클릭으로 페이지 전환 가능하게 하는 근거 로직 | `test/board.test.mjs` | `lib/board.mjs` (`getPageIndicators`) |
 
 **글루 코드(should-테스트 대상 아님)**: `public/client.js`가 `getPageIndicators`의 `{label, active}`를 시트명 텍스트 버튼(`renderNavButton`, 사용자 요청으로 점 표시 대신 버튼으로 변경, 시트명 줄 위에 배치)으로 렌더하고 클릭 시 `goToPage(i)` 호출(DOM 이벤트 의존이라 단위 테스트 제외). 디자인 레이아웃(고정 디바이스 비율 박스, eyebrow/세리프 매장명/rule 라인/점선 리더/품절 배지)은 `public/index.html`+`public/client.js`에 CSS로 재구현 — 순수 로직이 아니라 시각적 스타일이라 별도 should-테스트 대상 아님, 매뉴얼 스모크 테스트로 검증.
+
+## M11. 뷰포트 기반 디바이스 프로파일 자동 감지
+
+| 상태 | 테스트명 | 설명 | 테스트 파일 | 구현 파일 |
+|---|---|---|---|---|
+| ✅ Done | shouldSelectDeviceProfileFromViewportDimensions | 실시간 `window.innerWidth/innerHeight`로 4개 프로파일(mobile/tablet-port/tablet-land/signage) 중 하나 선택 — `_설정.디바이스`는 더 이상 렌더링 크기 결정에 안 쓰고 자산 선택 폴백으로만 유지 | `test/board.test.mjs` | `lib/board.mjs` (`selectDeviceProfile`) |
+| ✅ Done | shouldMatchDeviceProfileToExactSpecResolutions | CLAUDE.md `## 해상도`에 명시된 정확한 4개 해상도가 각각 자기 프로파일로 매칭 — 폭 기준 임의 브레이크포인트를 버리고 `DEVICE_DIMENSIONS`(export, 스펙 단일 소스) 기준 **가장 가까운 종횡비** 매칭으로 교체해 버그 수정 | `test/board.test.mjs` | `lib/board.mjs` (`DEVICE_DIMENSIONS`, `selectDeviceProfile`) |
+
+**근본 원인**: `client.js`가 `_설정.디바이스`(Excel 고정값)로 픽셀 캔버스를 고정하고 `transform:scale()`로 화면에 맞춰 축소 — 실제 보는 기기의 뷰포트 비율과 안 맞으면 레터박스/여백 발생, 사용자에겐 "잘림"으로 인지됨. 뷰포트 실시간 감지 자체가 없었음.
+
+**글루 코드(should-테스트 대상 아님)**: `public/client.js`가 `resize`(150ms 디바운스)/`orientationchange` 이벤트마다 `selectDeviceProfile(innerWidth, innerHeight)` 재계산 후 리렌더 — 고정 px 캔버스+`transform:scale` 방식을 버리고 보드를 `100vw × 100vh`로 항상 채움(레터박스 제거), `u = min(innerWidth, innerHeight)` 기준으로 폰트·여백 실시간 재계산. `index.html`의 고정 스케일 CSS(`transform-origin`) 제거.
+
+**매뉴얼 스모크 테스트 완료** (2026-07-24): `node --check public/client.js`, `node --check lib/board.mjs` 통과(IDE가 stale TS 진단 오탐 냈으나 실제 파싱은 정상). `PORT=4240 npm start` → `curl /`(200), `client.js`에 `selectDeviceProfile`/`innerWidth`/`100vw` 포함 확인. **실제 기기별(모바일/태블릿/가로세로) 시각 확인은 여전히 못함** — Chrome 확장 미설치. 브라우저 개발자도구로 기기 시뮬레이션 켜고 `npm start` 후 확인 부탁.
+
+**스펙 해상도 버그 수정 후 재검증** (2026-07-24, CLAUDE.md `## 해상도` 추가 반영): `node -e`로 4개 정확한 스펙 해상도(1080×1920/1920×1440/1440×1920/1080×2160) 직접 대입 → 전부 자기 프로파일로 정확히 매칭 확인. `PORT=4250 npm start` → `curl /`, `/client.js` 200 확인.
 
 ---
 
